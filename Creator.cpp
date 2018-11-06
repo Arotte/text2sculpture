@@ -7,21 +7,27 @@
 using namespace std;
 
 
+int Creator::randDirection() {
+    /** DEBUG **/
+    cout << "randDirection() function called; output: ";
+
+    
+    int r; r=rand()%100;
+        cout << r << endl; /** DEBUG **/
+    return r;
+
+}
+
+
 /** STRUCTORS **/
 /* It's important to place 0s to all places at 'locs' because not all of them are going to be used */
 Creator::Creator() {
-    locs = new bool**[500];
-    for(int i=0; i<500; ++i) {
-        locs[i] = new bool*[50];
-        for(int j=0; j<50; ++j) {
-            locs[i][j] = new bool[50];
-        }
-    }
+    
 
     for(int z=0; z<500; z++)
         for(int x=0; x<50; x++)
             for(int y=0; y<50; y++)
-                locs[x][y][z] = 0;
+                locs[z][x][y] = 0;
 
     for (int i = 0; i<501; i++)
         baseText[i] = '\n';
@@ -29,17 +35,6 @@ Creator::Creator() {
 
 	/** DEBUG **/
 	cout << "Creator object created." << endl;
-}
-
-Creator::~Creator() {
-
-    for(int i=0; i<500; ++i) {
-        for(int j=0; j<50; ++i) {
-            delete[] locs[i][j];
-        }
-        delete[] locs[i];
-    }
-    delete[] locs;
 }
 
 
@@ -91,14 +86,14 @@ void Creator::loadBaseText(const char* path) {
 
 
 /* Calculate the locations for each building block, and store them in 'locs' */
-void Creator::calcLocs() {
+void Creator::calcLocs(int shift) {
 
     /****************************************************************************************************/
     for(int x=0; x<26; x++) {
-        if(char_coords[x].c != '\n') locs[char_coords[x].x][char_coords[x].y][0] = true;
+        if(char_coords[x].c != '\n') locs[0][char_coords[x].x][char_coords[x].y] = true;
     }
 
-
+	srand (time(NULL));
     //int z=0;
     for(int z=0; z<500; ++z) {
     //while(z <500 ) {
@@ -110,18 +105,40 @@ void Creator::calcLocs() {
         coord from;
         from.x = char_coords[placeInAlphabet].x;
         from.y = char_coords[placeInAlphabet].y;
-
+		
+		
         for(int x=0; x<50; x++) {
             for(int y=0; y<50; y++ ) {
+					if( x == 33 && y == 25 ||
+						x == 16 && y == 25 ||
+						x == 20 && y == 32 ||
+						x == 29 && y == 32 ||
+						x == 29 && y == 17 ||
+						x == 20 && y == 17 ) { locs[z][x][y] = true; } 
+				
                     //int xx = x; if(x<49) ++xx; int yy = y; if(y>0) --y;
                     if(x != from.x || y != from.y) {
                         locs[z+1][x][y] = locs[z][x][y];
                         //cout << "NO COORD CHANGE." << endl;
                     } else {
-                        char_coords[placeInAlphabet].x = x-1;
-                        char_coords[placeInAlphabet].y = y-1;
-                        //if(0 <= x-1 <= 50 && 0 <= y-1 <= 50)
-                        locs[z+1][x-1][y-1] = true;
+						int rand = randDirection();
+						if (rand >= 0 && rand < 25 ) {
+							char_coords[placeInAlphabet].x = x-shift;
+							char_coords[placeInAlphabet].y = y-shift;
+							locs[z+1][x-shift][y-shift] = true;
+						} else if (rand >= 25 && rand < 50) {
+							char_coords[placeInAlphabet].x = x;
+							char_coords[placeInAlphabet].y = y-shift;
+							locs[z+1][x][y-shift] = true;
+						} else if (rand >= 50 && rand < 75) {
+							char_coords[placeInAlphabet].x = x-shift;
+							char_coords[placeInAlphabet].y = y+shift;
+                            locs[z+1][x-shift][y+shift] = true;
+						} else {
+							char_coords[placeInAlphabet].x = x-shift;
+							char_coords[placeInAlphabet].y = y;
+							locs[z+1][x-shift][y] = true;
+						}
 
                     }
             }
@@ -144,10 +161,11 @@ void Creator::calcLocs() {
 int Creator::findPlaceInAlphabet(char ch) {
     /** DEBUG **/
     cout << "Creator::findPlaceInAlphabet() function called; output: ";
+    
     char ch2 = tolower(ch);
 
     for(int i= 0; i<26; i++) {
-        char ch1 = tolower(char_coords[i].c);
+		char ch1 = tolower(char_coords[i].c);
         if (ch1 == ch2) {
                 cout << i <<endl; /** DEBUG **/
                 return i;
@@ -156,7 +174,6 @@ int Creator::findPlaceInAlphabet(char ch) {
     cout << "-1; " << ch << endl; /** DEBUG **/
     return -1;
 }
-
 
 
 
@@ -293,16 +310,33 @@ void Creator::drawCubeAt(int x, int y, int z) {
 /** *********************************************************************************************** **/
 /** .OBJ PARSER FUNCTIONS **/
 
-void Creator::createOBJ(const char* path) {
+void Creator::createOBJ(const char* path, int size) {
     freopen(path, "w", stdout);
     cout << "# Tower" << endl;
 
     int i=0;
-    for(int z=0; z<500; ++z) {
+    for(int z=0; z<190; ++z) { /* z<500 */
         for(int y=0; y<50; ++y) {
             for(int x=0; x<50; ++x) {
-                if(locs[x][y][z] == true) {
-                        drawOBJCubeAt(x, y, z, i);
+                if(locs[z][x][y] == true) {
+                        //drawOBJCubeAt(x, y, z, i, size);
+						/*if(z < 45)
+							drawOBJCuboidAt(x, y, z, i, 3, 3, 2);
+						else if (z >= 45 && z < 90)
+							drawOBJCuboidAt(x, y, z, i, 3, 5, 2);
+						else if (z >= 90 && z < 140)
+							drawOBJCuboidAt(x, y, z, i, 6, 9, 3);
+						else if (z >= 140)
+							drawOBJCuboidAt(x, y, z, i, 10, 12, 3);
+						*/
+						
+						//int sizeXY = 2 + (z/30);
+						//drawOBJCuboidAt(x, y, z, i, 4, 4, 4);
+						//drawOBJCuboidAt(x, y, z, i, sizeXY, sizeXY, 2);
+						
+						//double size = 2+(z/15);
+						double size = 4+(z/25);
+						drawOBJTetrahedronAt(x, y, z, i, size);
                         ++i;
                 }
             }
@@ -313,18 +347,18 @@ void Creator::createOBJ(const char* path) {
 }
 
 
-void Creator::drawOBJCubeAt(int x, int y, int z, int no) {
+void Creator::drawOBJCubeAt(int x, int y, int z, int no, int size) {
     //cout << endl;
     cout << "o Object." << no+1 << endl;
 
-    cout << "v " << x+0 << ".000000 " << y+0 << ".000000 " << z+0 << ".000000" << endl;
-    cout << "v " << x+1 << ".000000 " << y+0 << ".000000 " << z+0 << ".000000" << endl;
-    cout << "v " << x+1 << ".000000 " << y+0 << ".000000 " << z+1 << ".000000" << endl;
-    cout << "v " << x+0 << ".000000 " << y+0 << ".000000 " << z+1 << ".000000" << endl;
-    cout << "v " << x+1 << ".000000 " << y+1 << ".000000 " << z+1 << ".000000" << endl;
-    cout << "v " << x+0 << ".000000 " << y+1 << ".000000 " << z+0 << ".000000" << endl;
-    cout << "v " << x+1 << ".000000 " << y+1 << ".000000 " << z+0 << ".000000" << endl;
-    cout << "v " << x+0 << ".000000 " << y+1 << ".000000 " << z+1 << ".000000" << endl;
+    cout << "v " << x+0 << " " << y+0 << " " << z+0 << endl;
+    cout << "v " << x+size << " " << y+0 << " " << z+0 << endl;
+    cout << "v " << x+size << " " << y+0 << " " << z+size << endl;
+    cout << "v " << x+0 << " " << y+0 << " " << z+size << endl;
+    cout << "v " << x+size << " " << y+size << " " << z+size << endl;
+    cout << "v " << x+0 << " " << y+size << " " << z+0 << endl;
+    cout << "v " << x+size << " " << y+size << " " << z+0 << endl;
+    cout << "v " << x+0 << " " << y+size << " " << z+size << endl;
 
     cout << endl << endl;
 
@@ -342,6 +376,75 @@ void Creator::drawOBJCubeAt(int x, int y, int z, int no) {
     cout << "f " << 1+(no*8) << " " << 3+(no*8) << " " << 4+(no*8) << endl;
 
     cout << endl;
+}
+
+void Creator::drawOBJCuboidAt(int x, int y, int z, int no, int sizeX, int sizeY, int sizeZ) {
+    //cout << endl;
+    cout << "o Object." << no+1 << endl;
+
+    cout << "v " << x+0 << ".000000 " << y+0 << ".000000 " << z+0 << ".000000" << endl;
+    cout << "v " << x+sizeX << ".000000 " << y+0 << ".000000 " << z+0 << ".000000" << endl;
+    cout << "v " << x+sizeX << ".000000 " << y+0 << ".000000 " << z+sizeZ << ".000000" << endl;
+    cout << "v " << x+0 << ".000000 " << y+0 << ".000000 " << z+sizeZ << ".000000" << endl;
+    cout << "v " << x+sizeX << ".000000 " << y+sizeY << ".000000 " << z+sizeZ << ".000000" << endl;
+    cout << "v " << x+0 << ".000000 " << y+sizeY << ".000000 " << z+0 << ".000000" << endl;
+    cout << "v " << x+sizeX << ".000000 " << y+sizeY << ".000000 " << z+0 << ".000000" << endl;
+    cout << "v " << x+0 << ".000000 " << y+sizeY << ".000000 " << z+sizeZ << ".000000" << endl;
+
+    cout << endl << endl;
+
+    cout << "f " << 3+(no*8) << " " << 1+(no*8) << " " << 2+(no*8) << endl;
+    cout << "f " << 7+(no*8) << " " << 3+(no*8) << " " << 2+(no*8) << endl;
+    cout << "f " << 3+(no*8) << " " << 7+(no*8) << " " << 5+(no*8) << endl;
+    cout << "f " << 8+(no*8) << " " << 3+(no*8) << " " << 5+(no*8) << endl;
+    cout << "f " << 3+(no*8) << " " << 8+(no*8) << " " << 4+(no*8) << endl;
+    cout << "f " << 8+(no*8) << " " << 1+(no*8) << " " << 4+(no*8) << endl;
+    cout << "f " << 1+(no*8) << " " << 8+(no*8) << " " << 6+(no*8) << endl;
+    cout << "f " << 7+(no*8) << " " << 1+(no*8) << " " << 6+(no*8) << endl;
+    cout << "f " << 8+(no*8) << " " << 7+(no*8) << " " << 6+(no*8) << endl;
+    cout << "f " << 7+(no*8) << " " << 8+(no*8) << " " << 5+(no*8) << endl;
+    cout << "f " << 1+(no*8) << " " << 7+(no*8) << " " << 2+(no*8) << endl;
+    cout << "f " << 1+(no*8) << " " << 3+(no*8) << " " << 4+(no*8) << endl;
+
+    cout << endl;
+}
+
+void Creator::drawOBJTetrahedronAt(int x, int y, int z, int no, double size) {
+	cout << "o Object." << no+1 << endl;
+
+    cout << "v " << x+0 << " " << y+0 << " " << z+size << endl;
+    cout << "v " << x+0 << " " << y+size << " " << z+0 << endl;
+    cout << "v " << x-size << " " << y-size << " " << z+0 << endl;
+    cout << "v " << x+size << " " << y-size << " " << z+0  << endl;
+
+    cout << endl << endl;
+
+    cout << "f " << 1+(no*4) << " " << 2+(no*4) << " " << 3+(no*4) << endl;
+    cout << "f " << 1+(no*4) << " " << 3+(no*4) << " " << 4+(no*4) << endl;
+    cout << "f " << 3+(no*4) << " " << 2+(no*4) << " " << 4+(no*4) << endl;
+    cout << "f " << 2+(no*4) << " " << 1+(no*4) << " " << 4+(no*4) << endl;
+    cout << endl;
+	
+	
+}
+
+void Creator::drawOBJTetrahedron90At(int x, int y, int z, int no, double size) {
+	cout << "o Object." << no+1 << endl;
+
+    cout << "v " << x+0 << " " << y+0 << " " << z+0 << endl;
+    cout << "v " << x+0 << " " << y+size << " " << z+size << endl;
+    cout << "v " << x+size << " " << y-size << " " << z+size << endl;
+    cout << "v " << x-size << " " << y-size << " " << z+size  << endl;
+
+    cout << endl << endl;
+
+    cout << "f " << 1+(no*4) << " " << 2+(no*4) << " " << 3+(no*4) << endl;
+    cout << "f " << 1+(no*4) << " " << 3+(no*4) << " " << 4+(no*4) << endl;
+    cout << "f " << 3+(no*4) << " " << 2+(no*4) << " " << 4+(no*4) << endl;
+    cout << "f " << 2+(no*4) << " " << 1+(no*4) << " " << 4+(no*4) << endl;
+    cout << endl;
+	
+	
 }
 
 
