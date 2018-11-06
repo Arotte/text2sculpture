@@ -37,6 +37,10 @@ Creator::Creator() {
 	cout << "Creator object created." << endl;
 }
 
+Creator::~Creator() {
+	cout << "Creator object deleted." << endl;
+}
+
 
 /** FUNCTIONS **/
 /* Load char coordinates from file in 'path' to 'char_coords' */
@@ -71,7 +75,7 @@ void Creator::loadBaseText(const char* path) {
         fin.get(c);
         /* If a char is not a space, digit, or symbol, add it to class var 'baseText' */
         if(isalpha(c)) { // !isspace(c) && !isdigit(c) && !ispunct(c)
-             if(i < 500) {
+             if(i < 501) {
                 baseText[i] = c;
                 ++i;
              } else break;
@@ -107,8 +111,8 @@ void Creator::calcLocs(int shift) {
         from.y = char_coords[placeInAlphabet].y;
 		
 		
-        for(int x=0; x<50; x++) {
-            for(int y=0; y<50; y++ ) {
+        for(int x=0; x<50; ++x) {
+            for(int y=0; y<50; ++y) {
 					if( x == 33 && y == 25 ||
 						x == 16 && y == 25 ||
 						x == 20 && y == 32 ||
@@ -142,7 +146,7 @@ void Creator::calcLocs(int shift) {
 
                     }
             }
-                        //cout << "COOORD CHANGE." << endl;
+                        //cout << "	-COOORD CHANGE." << endl;
         }
         //z++;
     }
@@ -336,7 +340,7 @@ void Creator::createOBJ(const char* path, int size) {
 						
 						//double size = 2+(z/15);
 						double size = 4+(z/25);
-						drawOBJTetrahedronAt(x, y, z, i, size);
+						drawOBJTetrahedron90At(x, y, z, i, size);
                         ++i;
                 }
             }
@@ -351,14 +355,14 @@ void Creator::drawOBJCubeAt(int x, int y, int z, int no, int size) {
     //cout << endl;
     cout << "o Object." << no+1 << endl;
 
-    cout << "v " << x+0 << " " << y+0 << " " << z+0 << endl;
-    cout << "v " << x+size << " " << y+0 << " " << z+0 << endl;
-    cout << "v " << x+size << " " << y+0 << " " << z+size << endl;
-    cout << "v " << x+0 << " " << y+0 << " " << z+size << endl;
-    cout << "v " << x+size << " " << y+size << " " << z+size << endl;
-    cout << "v " << x+0 << " " << y+size << " " << z+0 << endl;
-    cout << "v " << x+size << " " << y+size << " " << z+0 << endl;
-    cout << "v " << x+0 << " " << y+size << " " << z+size << endl;
+    cout << "v " << x+0 << ".000000 " << y+0 << ".000000 " << z+0 << ".000000" << endl;
+    cout << "v " << x+size << ".000000 " << y+0 << ".000000 " << z+0 << ".000000" << endl;
+    cout << "v " << x+size << ".000000 " << y+0 << ".000000 " << z+size << ".000000" << endl;
+    cout << "v " << x+0 << ".000000 " << y+0 << ".000000 " << z+size << ".000000" << endl;
+    cout << "v " << x+size << ".000000 " << y+size << ".000000 " << z+size << ".000000" << endl;
+    cout << "v " << x+0 << ".000000 " << y+size << ".000000 " << z+0 << ".000000" << endl;
+    cout << "v " << x+size << ".000000 " << y+size << ".000000 " << z+0 << ".000000" << endl;
+    cout << "v " << x+0 << ".000000 " << y+size << ".000000 " << z+size << ".000000" << endl;
 
     cout << endl << endl;
 

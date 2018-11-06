@@ -2,8 +2,10 @@
 #include "Creator.h"
 #include<fstream>
 #include <cstdlib>
+#include<stdlib.h> /* For srand() in function randDirection() */
+	
 //#include "STLParser.hpp"
-using namespace std;
+using namespace std;	
 
 int main(int argc, char** argv) {
     cout << "Let's start building that tower!" << endl;
@@ -42,7 +44,7 @@ int main(int argc, char** argv) {
     /* Create and STL file using the locations for each building block */
     //creator.createSTL("OUTPUT11.stl");
     //creator.createOBJ(argv[1], cubeSize);
-	creator.createOBJ("OUT5DRAGA_TETRA1_FORD_3.obj", 5);
+	creator.createOBJ("OUT/DRAGA_TETRA1_FORD_3.obj", 5);
 
     cout << "main.cpp run succesfully." << endl;
 	//delete creator;

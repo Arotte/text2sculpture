@@ -35,6 +35,7 @@ public:
     /** STRUCTORS **/
     /* It's important to place 0s to all places at 'locs' because not all of them are going to be used */
     Creator();
+	~Creator();
 
     /** FUNCTIONS **/
     /* Load char coordinates from file in 'path' to 'char_coords' */
